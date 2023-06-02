@@ -40,16 +40,6 @@ void trim_front(std::string& str){
 	str.erase(str.begin(), itr);
 }
 
-Line get_line(std::ifstream& stream){
-	Line strOut;
-	char c = stream.get();
-	while(c != '\n' && !stream.eof()){
-		strOut.push_back(c);
-		c = stream.get();
-	}
-	return strOut;
-}
-
 File load_file(std::string_view filename){
 	File file;
 	std::ifstream fstream("make.txt");
@@ -59,7 +49,8 @@ File load_file(std::string_view filename){
 	}else{
 		File::iterator insertTarget;
 		while(!fstream.eof()){
-			auto line = get_line(fstream);
+			Line line;
+			std::getline(fstream, line);
 			if(!empty_line(line)){
 				if(!std::isblank(line.front())){
 					file.emplace_back();
