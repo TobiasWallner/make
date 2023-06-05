@@ -1,12 +1,10 @@
 
 
-//C std
-#include <stdlib.h>
-#include <unistd.h>
-
 //C++ std
+#include <cstdlib>
 #include <vector>
 #include <string>
+#include <cstring>
 #include <iostream>
 #include <fstream>
 #include <string_view>
@@ -89,9 +87,12 @@ const Target& find_target(const File& file, std::string_view target){
 void execute_target(const Target& target){
 	for(auto itr = target.begin()+1; itr != target.end(); ++itr){
 		if(itr->starts_with("cd ")){
-			chdir(itr->c_str() + sizeof("cd ") - 1);
+			std::filesystem::current_path(itr->c_str() + sizeof("cd ") - 1);
 		}else{
-			system(itr->c_str());	
+			const int errorLevel = system(itr->c_str());	
+			if(errorLevel != 0){
+				exit(EXIT_FAILURE);
+			}
 		}
 	}
 }
@@ -105,13 +106,13 @@ void change_to_top_level_make_dir(std::string_view filename){
 			return;
 		}else{
 			auto oldPath = std::filesystem::current_path();
-			chdir("..");
+			std::filesystem::current_path("..");
 			run = !(oldPath == std::filesystem::current_path());
 			oldPath = std::filesystem::current_path();;
 		}
 	}
 	std::cout << "Error: could not find a make file" << std::endl;
-	chdir(homePath.string().c_str());
+	std::filesystem::current_path(homePath);
 	exit(EXIT_FAILURE);
 }
 
@@ -120,8 +121,8 @@ int main(int argumentCount, char** argumentStrings){
 	++argumentStrings;
 	
 	if(argumentCount != 0){
-		if(strcmp(argumentStrings[0], "--version") == 0){
-			std::cout << "version 1.1.0" << std::endl;
+		if(std::strcmp(argumentStrings[0], "--version") == 0){
+			std::cout << "version 1.2.1" << std::endl;
 			return EXIT_SUCCESS;
 		}	
 	}	
@@ -144,7 +145,7 @@ int main(int argumentCount, char** argumentStrings){
 	}
 	
 	// return back to home - aka the place this programm was started in
-	chdir(homePath.string().c_str());
+	std::filesystem::current_path(homePath);
 	
 	return EXIT_SUCCESS;
 }
